@@ -1,0 +1,210 @@
+<style>
+  .checkout-container {
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.payment-card {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 15px;
+    padding: 45px 40px 30px 40px;
+    max-width: 450px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+    position: relative;
+}
+
+.mini-timer {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 161, 155, 0.1); /* Fondo verde Petronas tenue */
+    border: 1px solid #00A19B;
+    padding: 6px 12px;
+    border-radius: 20px;
+    color: #00A19B;
+    font-size: 0.85rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 0 10px rgba(0, 161, 155, 0.2);
+}
+
+#countdown-timer {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1rem;
+}
+
+.payment-header h3 {
+    margin: 15px 0 5px;
+    letter-spacing: 1px;
+    color: #fff;
+}
+
+.payment-header p {
+    color: #888;
+    font-size: 0.85rem;
+    margin-bottom: 25px;
+}
+
+.order-summary-mini {
+    background: #252525;
+    padding: 15px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 4px solid #00A19B; 
+    /* CAMBIO AQUÍ: Forzamos el color del texto a blanco o gris claro */
+    color: #ffffff; 
+    margin-top: 10px;
+}
+
+.order-summary-mini span:first-child {
+    color: #e0e0e0; /* Un gris muy claro para el texto "Total a transferir" */
+    font-weight: 500;
+}
+
+.price-highlight {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #00A19B; /* Verde Petronas brillante */
+    text-shadow: 0 0 10px rgba(0, 161, 155, 0.3); /* Un pequeño resplandor */
+}
+.security-badges {
+    margin-top: 25px;
+    font-size: 0.75rem;
+    color: #555;
+    line-height: 1.6;
+}
+</style>
+
+<script src="https://www.paypal.com/sdk/js?client-id=AaOsvIcud1gVUvdKK5EuAisiJcZQcgGX_MgjhnBbioto0lCwwIWq1Pr3w9LhHlBR19YI8CWFDabAaszs&currency=MXN&debug=false&locale=es_MX&buyer-country=MX"></script>
+
+<div class="checkout-container">
+    <div class="payment-card">
+        <div class="mini-timer">
+            <i class="fas fa-clock"></i> 
+            <span id="countdown-timer">00:00</span>
+        </div>
+
+        <div class="payment-header">
+            <i class="fab fa-paypal" style="color: #0070ba; font-size: 2rem;"></i>
+            <h3>MÉTODO DE PAGO SEGURO</h3>
+            <p>Selecciona tu forma de pago preferida para finalizar la compra.</p>
+        </div>
+        
+        <div class="order-summary-mini">
+            <span>Total a transferir:</span>
+            <span class="price-highlight">${{ total }} MXN</span>
+        </div>
+
+        <div id="paypal-button-container" style="margin-top: 25px;"></div>
+        
+        <div class="security-badges">
+            <i class="fas fa-lock"></i> Encriptación SSL de 256 bits
+            <br>
+            <i class="fas fa-shield-alt"></i> Protección al comprador garantizada
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+paypal.Buttons({
+    style: {
+        layout: 'vertical',
+        color:  'black',     // Negro elegante
+        shape:  'rect',      // Bordes rectos
+        label:  'pay',       
+        height: 50          
+    },
+
+    createOrder: function(data, actions) {
+        // Aseguramos que el total se formatee como un número string sin comas (ej. "1500.00")
+        let totalPago = parseFloat("{{ total|stringformat:'.2f' }}") || 0.00;
+
+        return actions.order.create({
+            purchase_units: [{
+                amount: {
+                    value: totalPago.toFixed(2),
+                    currency_code: 'MXN'
+                },
+                description: "Rifa Mercedes C200 - Boletos"
+            }]
+        });
+    },
+
+    onApprove: function(data, actions) {
+        // 1. Ocultar el contenedor de botones o deshabilitar interacción
+        let container = document.getElementById('paypal-button-container');
+        if (container) {
+            container.style.opacity = '0.5';
+            container.style.pointerEvents = 'none';
+        }
+
+        // 2. Capturar el pago
+        return actions.order.capture().then(function(details) {
+            console.log("Pago capturado exitosamente:", details);
+            
+            // 3. Mostrar mensaje de éxito
+            if (container) {
+                container.innerHTML = '<h4 style="color: #00A19B; margin-top: 15px;"><i class="fas fa-spinner fa-spin"></i> ¡Pago verificado! Entrando a la selección...</h4>';
+            }
+
+            // 4. Redirigir a pago_exitoso
+            window.location.href = "{% url 'pago_exitoso' %}";
+        }).catch(function(err) {
+            console.error("Error al capturar la orden en PayPal:", err);
+            alert("Ocurrió un error al procesar el pago. Por favor contacta a soporte.");
+            if (container) {
+                container.style.opacity = '1';
+                container.style.pointerEvents = 'auto';
+            }
+        });
+    },
+
+    onError: function(err) {
+        console.error('Error en el flujo de PayPal:', err);
+        alert('Hubo un error al conectar con PayPal. Revisa la consola o intenta de nuevo.');
+    }
+}).render('#paypal-button-container');
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let tiempoRestante = parseInt("{{ segundos_restantes|default:900 }}");
+    const display = document.getElementById('countdown-timer');
+
+    function actualizarReloj() {
+        if (tiempoRestante <= 0) {
+            display.innerText = "00:00";
+            alert("El tiempo de reserva ha expirado.");
+            window.location.href = "{% url 'detalle_rifa' 1 %}"; // Redirigir a la rifa
+            return;
+        }
+
+        const minutos = Math.floor(tiempoRestante / 60);
+        const segundos = tiempoRestante % 60;
+
+        display.innerText = 
+            (minutos < 10 ? "0" : "") + minutos + ":" + 
+            (segundos < 10 ? "0" : "") + segundos;
+
+        // Cambiar a rojo si queda poco tiempo
+        if (tiempoRestante < 60) {
+            display.style.color = "#ff4d4d";
+        }
+
+        tiempoRestante--;
+    }
+
+    setInterval(actualizarReloj, 1000);
+    actualizarReloj();
+});
+</script>

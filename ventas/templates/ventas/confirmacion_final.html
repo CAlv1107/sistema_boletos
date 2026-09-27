@@ -1,0 +1,168 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprobante Oficial - {{ compra.nombre_comprador }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #050505;
+            font-family: 'Inter', 'Helvetica', Arial, sans-serif;
+            margin: 0;
+            padding: 30px 15px;
+            color: #ffffff;
+        }
+        .ticket-wrapper {
+            background-color: #0f0f0f;
+            color: #ffffff;
+            max-width: 550px;
+            margin: 0 auto;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 2px solid #d4af37;
+            box-shadow: 0px 10px 30px rgba(212, 175, 55, 0.15);
+        }
+        .header-gold {
+            background-color: #d4af37;
+            padding: 25px;
+            color: #000000;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.3rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+        .content {
+            padding: 30px 25px;
+            text-align: center;
+        }
+        .welcome-text {
+            font-size: 1.1rem;
+            margin-top: 0;
+            margin-bottom: 5px;
+        }
+        .event-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #d4af37;
+            margin: 15px 0 25px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        /* Contenedor de boletos */
+        .ticket-number-box {
+            background: #1a1a1a;
+            border: 1px dashed #d4af37;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 12px;
+        }
+        .label {
+            font-size: 0.8rem;
+            color: #d4af37;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .number {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #ffffff;
+            display: block;
+            line-height: 1;
+        }
+        
+        .qr-container {
+            background: #ffffff;
+            padding: 12px;
+            display: inline-block;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        .qr-container img {
+            display: block;
+            max-width: 150px;
+            height: auto;
+        }
+
+        .footer-info {
+            padding: 20px;
+            font-size: 0.8rem;
+            color: #888888;
+            background: #050505;
+            text-align: center;
+            border-top: 1px solid #1a1a1a;
+            line-height: 1.6;
+        }
+        
+        .btn-volver {
+            display: inline-block;
+            margin-top: 25px;
+            background-color: #d4af37;
+            color: #000000;
+            padding: 12px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+        .btn-volver:hover {
+            background-color: #f3cf65;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ticket-wrapper">
+        <div class="header-gold">Comprobante Oficial</div>
+        
+        <div class="content">
+            <p class="welcome-text">¡Hola, <strong>{{ compra.nombre_comprador }}</strong>!</p>
+            <p style="color: #cccccc; font-size: 0.95rem; margin: 0;">Tu participación ha sido confirmada para:</p>
+            
+            <div class="event-title">Sorteo Iphone 18 Pro Max</div>
+            
+            <!-- Recorremos los boletos asignados al cliente -->
+            {% for boleto in boletos %}
+                <div class="ticket-number-box">
+                    <span class="label">Boleto Asignado</span>
+                    <span class="number">#{{ boleto.numero }}</span>
+                    
+                    {% if boleto.qr_code %}
+                        <div class="qr-container">
+                            <img src="{{ boleto.qr_code.url }}" alt="Código QR Boleto #{{ boleto.numero }}">
+                        </div>
+                    {% endif %}
+                </div>
+            {% empty %}
+                <div class="ticket-number-box">
+                    <span class="label">Estado</span>
+                    <span class="number" style="font-size: 1.8rem;">Procesando boletos...</span>
+                </div>
+            {% endfor %}
+
+            <p style="font-size: 0.85rem; color: #aaaaaa; margin-top: 20px;">
+                Hemos enviado un respaldo con tus boletos a:<br>
+                <strong style="color: #d4af37;">{{ compra.email_comprador }}</strong>
+            </p>
+
+            <a href="{% url 'inicio' %}" class="btn-volver">Volver al Inicio</a>
+        </div>
+        
+        <div class="footer-info">
+            <strong>WhatsApp registrado:</strong> {{ compra.whatsapp_comprador }}<br>
+            <strong>Fecha de emisión:</strong> {{ compra.fecha_pago|date:"d/m/Y H:i" }} hrs<br>
+            <span style="color: #555; display: block; margin-top: 5px;">Este es un comprobante digital generado automáticamente.</span>
+        </div>
+    </div>
+
+</body>
+</html>

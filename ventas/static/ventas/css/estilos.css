@@ -1,0 +1,147 @@
+:root {
+    --mercedes-negro: #1a1a1a;       /* Negro profundo mate */
+    --mercedes-verde: #00A19B;       /* Verde Petronas oficial */
+    --mercedes-plata: #e0e0e0;       /* Gris plata para textos secundarios */
+}
+
+body {
+    background-color: var(--mercedes-negro);
+    color: white; /* Texto blanco para que resalte sobre el negro */
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+    padding-bottom: 150px; /* Esto deja espacio para que el panel no tape nada */
+    background-color: #1a1a1a;
+}
+
+/* Título con acento lateral verde (estilo F1) */
+h1 {
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border-left: 5px solid var(--mercedes-verde);
+    padding-left: 15px;
+    margin-top: 40px;
+    font-weight: 800;
+}
+
+.contenedor-principal {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+    border-top: 3px solid var(--mercedes-verde);
+    background: rgba(255, 255, 255, 0.03); /* Un toque de brillo sobre el negro */
+}
+
+.cuadricula-boletos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(55px, 1fr));
+    gap: 12px;
+    margin: 30px auto;
+    max-width: 900px; /* Centra la cuadrícula */
+    padding: 20px;
+}
+
+.boleto {
+    display: inline-block;
+    width: 50px;
+    height: 50px;
+    line-height: 46px; /* Ajustado por el borde de 2px */
+    text-align: center;
+    border-radius: 10px; /* Bordes más suaves */
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: 2px solid transparent; /* Reserva el espacio del borde */
+}
+
+/* DISPONIBLE: Blanco con marco azul */
+.disponible {
+    background-color: #ffffff;
+    color: #007bff;
+    border-color: #007bff;
+}
+
+.disponible:hover {
+    background-color: #f0f7ff;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0,123,255,0.2);
+}
+
+/* SELECCIONADO: Azul sólido (Activo por JS) */
+.boleto.seleccionado {
+    background-color: #007bff !important;
+    color: white !important;
+    border-color: #0056b3 !important;
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(0,123,255,0.4);
+}
+
+/* VENDIDO: Gris "Apagado" */
+.vendido {
+    background-color: #2a2a2a !important; /* Gris muy oscuro */
+    color: #555 !important;              /* Texto casi invisible */
+    border: 1px solid #333 !important;
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+/* Estilo para el panel de resumen que aparece abajo */
+.panel-resumen {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    padding: 20px 40px;
+    border-radius: 50px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    display: none; /* Se activa por JS */
+    width: 90%;
+    max-width: 600px;
+    z-index: 1000;
+    border: 1px solid #eee;
+}
+
+.resumen-contenido {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.numeros-badge {
+    color: #007bff;
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-left: 10px;
+}
+
+.btn-pagar {
+   background-color: #00A19B; /* Verde Petronas */
+    color: #000000;           /* Texto negro para contraste */
+    border: none;
+    padding: 12px 30px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    text-transform: uppercase; /* Letras mayúsculas tipo F1 */
+    letter-spacing: 1px;
+    border-radius: 4px;       /* Bordes rectos y técnicos */
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-pagar:hover {
+    background-color: #00c4bc; /* Verde más brillante al pasar el mouse */
+    box-shadow: 0 0 20px rgba(0, 161, 155, 0.4); /* Brillo neón */
+    transform: scale(1.05);
+}
+
+/* Ajuste de la imagen */
+.imagen-producto {
+    width: 100%;
+    max-width: 450px;
+    height: auto;
+    display: block;
+    margin: 0 auto 20px auto;
+    border-bottom: 3px solid #00A19B;
+}

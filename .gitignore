@@ -1,0 +1,17 @@
+# --- SEGURIDAD ---
+.env
+
+# --- BASE DE DATOS ---
+db.sqlite3
+
+# --- PYTHON ---
+__pycache__/
+*.py[cod]
+
+# --- TU ENTORNO VIRTUAL ---
+# (Asegúrate de que el nombre coincida con tu carpeta, ej: env o venv)
+env/
+venv/
+# --- SISTEMA ---
+Thumbs.db
+.DS_Store

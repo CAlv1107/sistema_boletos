@@ -1,0 +1,261 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rifa - {{ rifa.titulo }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'ventas/css/estilos.css' %}?v=1.2">
+    <style>
+        /* Estilos para el banner post-pago y contador de tiempo */
+        .banner-post-pago {
+            background-color: #111827;
+            border: 2px solid #00A19B;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .banner-post-pago h2 {
+            color: #00A19B;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+        .badge-boletos {
+            background-color: #00A19B;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        .reloj-contenedor {
+            margin-top: 15px;
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 8px 18px;
+            border-radius: 25px;
+            font-size: 0.95rem;
+        }
+        .reloj-tiempo {
+            color: #ffc107;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="contenedor-principal">
+        
+        <!-- HEADER TRADICIONAL -->
+        <header class="header-rifa" style="margin-bottom: 30px;">
+            <div class="imagen-container">
+                <img src="{% static 'ventas/img/Iphone18.jpg' %}" alt="{{ rifa.titulo }}" class="imagen-producto">
+            </div>
+            <h1>{{ rifa.titulo }}</h1>
+            <p class="subtitulo">Selecciona tus números de la suerte. Todos los número disponibles están abajo</p>
+        </header>
+
+        <!-- BANNER DE MODO POST-PAGO CON RELOJ DE 15 MINUTOS -->
+        {% if modo_post_pago %}
+        <div class="banner-post-pago">
+            <h2>¡Pago Confirmado! 🎉</h2>
+            <p style="font-size: 1.1rem; margin-bottom: 5px;">
+                Tienes <span id="contador-restantes" class="badge-boletos">{{ boletos_por_elegir }}</span> 
+                boleto(s) de regalo pendiente(s) por elegir.
+            </p>
+            <div class="reloj-contenedor">
+                ⏱️ Tiempo restante para asignar tus números: 
+                <span id="reloj-expiracion" class="reloj-tiempo">15:00</span>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- CUADRÍCULA DE BOLETOS -->
+        <div class="cuadricula-boletos">
+            {% for boleto in boletos %}
+                <div class="boleto 
+                    {% if boleto.estado == 'vendido' %}
+                        vendido
+                    {% elif boleto.numero in boletos_propios %}
+                        seleccionado
+                    {% else %}
+                        disponible
+                    {% endif %}" 
+                    data-numero="{{ boleto.numero }}"
+                    onclick="seleccionarBoleto(this)">
+                    {{ boleto.numero }}
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- PANEL INFERIOR DE CONFIRMACIÓN -->
+        <div id="resumen-seleccion" class="panel-resumen">
+            <div class="resumen-contenido">
+                <div>
+                    <span class="label">Números seleccionados:</span>
+                    <span id="numeros-seleccionados" class="numeros-badge"></span>
+                </div>
+                
+                {% if modo_post_pago %}
+                    <button id="btn-continuar" class="btn-pagar" onclick="confirmarBoletosPostPago()">
+                        Guardar Selección de Boletos
+                    </button>
+                {% else %}
+                    <button id="btn-continuar" class="btn-pagar" onclick="enviarSeleccion()">
+                        Confirmar y Pagar
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- VALORES OCULTOS Y CONFIGURACIÓN GLOBAL DE JAVASCRIPT -->
+    <input type="hidden" id="rifa-id" value="{{ rifa.id }}">
+    {% csrf_token %}
+
+    <script>
+        // Variables enviadas desde Django en la vista elegir_boletos_post_pago
+        const MODO_POST_PAGO = {{ modo_post_pago|yesno:"true,false" }};
+        const MAX_BOLETOS_PERMITIDOS = parseInt("{{ boletos_por_elegir|default:0 }}");
+        const TOKEN_COMPRA = "{{ compra.token_seguro|default:'' }}";
+        let SEGUNDOS_RESTANTES = parseInt("{{ segundos_restantes|default:900 }}");
+        
+        let seleccionadosPostPago = [];
+
+        // 1. CONTROL DEL RELOJ REGRESIVO (15 MINUTOS)
+        if (MODO_POST_PAGO && SEGUNDOS_RESTANTES > 0) {
+            const elReloj = document.getElementById('reloj-expiracion');
+            
+            const timer = setInterval(() => {
+                if (SEGUNDOS_RESTANTES <= 0) {
+                    clearInterval(timer);
+                    alert("El tiempo límite para seleccionar tus números ha expirado. Se asignarán automáticamente.");
+                    window.location.reload();
+                    return;
+                }
+
+                let min = Math.floor(SEGUNDOS_RESTANTES / 60);
+                let seg = SEGUNDOS_RESTANTES % 60;
+                if (elReloj) {
+                    elReloj.textContent = `${min.toString().padStart(2, '0')}:${seg.toString().padStart(2, '0')}`;
+                }
+                SEGUNDOS_RESTANTES--;
+            }, 1000);
+        }
+
+    // 1. FUNCIÓN PARA SELECCIONAR / DESSELECCIONAR BOLETOS
+function seleccionarBoleto(elemento) {
+    if (elemento.classList.contains('vendido')) return;
+
+    // Forzamos el valor a String limpio
+    const numero = String(elemento.getAttribute('data-numero') || elemento.textContent.trim());
+
+    if (MODO_POST_PAGO) {
+        // Leemos cuántos están realmente seleccionados en el DOM
+        const seleccionadosDOM = document.querySelectorAll('.cuadricula-boletos .boleto.seleccionado');
+
+        if (elemento.classList.contains('seleccionado')) {
+            // Desmarcar
+            elemento.classList.remove('seleccionado');
+            seleccionadosPostPago = seleccionadosPostPago.filter(n => String(n) !== numero);
+        } else {
+            // Validar límite máximo permitido
+            if (seleccionadosDOM.length >= MAX_BOLETOS_PERMITIDOS) {
+                alert(`Solo tienes permitido elegir ${MAX_BOLETOS_PERMITIDOS} boleto(s). Desmarca uno para cambiar tu elección.`);
+                return;
+            }
+            // Marcar
+            elemento.classList.add('seleccionado');
+            if (!seleccionadosPostPago.includes(numero)) {
+                seleccionadosPostPago.push(numero);
+            }
+        }
+
+        // Sincronizamos la lista leyendo directamente de los elementos activos en pantalla
+        const elementosActivos = document.querySelectorAll('.cuadricula-boletos .boleto.seleccionado');
+        const listaNumeros = Array.from(elementosActivos).map(el => String(el.getAttribute('data-numero') || el.textContent.trim()));
+
+        // Actualizar badges visuales en la interfaz
+        const badgeNumeros = document.getElementById('numeros-seleccionados');
+        if (badgeNumeros) {
+            badgeNumeros.textContent = listaNumeros.join(', ');
+        }
+
+        const badgeRestantes = document.getElementById('contador-restantes');
+        if (badgeRestantes) {
+            badgeRestantes.textContent = MAX_BOLETOS_PERMITIDOS - listaNumeros.length;
+        }
+
+    } else {
+        // Flujo normal previo al pago
+        if (typeof window.seleccionarBoletoNormal === 'function') {
+            window.seleccionarBoletoNormal(elemento);
+        } else {
+            elemento.classList.toggle('seleccionado');
+        }
+    }
+}
+
+// 2. FUNCIÓN DE ENVÍO VÍA AJAX
+function confirmarBoletosPostPago() {
+    // Leemos directamente del DOM en el instante exacto del clic
+    const elementosActivos = document.querySelectorAll('.cuadricula-boletos .boleto.seleccionado');
+    const boletosFinales = Array.from(elementosActivos).map(el => String(el.getAttribute('data-numero') || el.textContent.trim()));
+
+    if (boletosFinales.length !== MAX_BOLETOS_PERMITIDOS) {
+        alert(`Debes elegir exactamente ${MAX_BOLETOS_PERMITIDOS} boleto(s) para continuar. Has seleccionado ${boletosFinales.length}.`);
+        return;
+    }
+
+    const btn = document.getElementById('btn-continuar');
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Guardar Selección de Boletos...";
+    }
+
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    fetch(`/rifa/seleccion/${TOKEN_COMPRA}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({
+            'boletos': boletosFinales
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'ok') {
+            window.location.href = data.redirect_url;
+        } else {
+            alert(data.mensaje || "Ocurrió un error.");
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = "Guardar Selección de Boletos";
+            }
+        }
+    })
+    .catch(err => {
+        console.error("Error AJAX:", err);
+        alert("Ocurrió un error de conexión con el servidor.");
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = "Guardar Selección de Boletos";
+        }
+    });
+}
+     
+    </script>
+
+    <!-- JS EXTERNO -->
+    <script src="{% static 'ventas/js/seleccion.js' %}"></script>
+</body>
+</html>

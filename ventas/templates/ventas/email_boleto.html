@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .ticket-wrapper {
+            background-color: #0f0f0f; /* Negro base */
+            color: #ffffff;
+            font-family: 'Helvetica', Arial, sans-serif;
+            max-width: 500px;
+            margin: 20px auto;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 2px solid #d4af37; /* Dorado neutro */
+            box-shadow: 0px 10px 30px rgba(0,0,0,0.5);
+        }
+        .header-gold {
+            background-color: #d4af37;
+            padding: 25px;
+            color: #000000;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.4rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+        .content {
+            padding: 40px 30px;
+            text-align: center;
+        }
+        .event-title {
+            font-size: 1.2rem;
+            color: #d4af37;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+        .ticket-number-box {
+            background: #1a1a1a;
+            border: 1px dashed #d4af37;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 10px;
+        }
+        .number {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: #ffffff;
+            display: block;
+            line-height: 1;
+        }
+        .label {
+            font-size: 0.8rem;
+            color: #d4af37;
+            letter-spacing: 2px;
+        }
+        .qr-container {
+            background: #ffffff;
+            padding: 15px;
+            display: inline-block;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        .footer-info {
+            padding: 20px;
+            font-size: 0.75rem;
+            color: #555;
+            background: #050505;
+            text-align: center;
+            border-top: 1px solid #1a1a1a;
+        }
+    </style>
+</head>
+<body>
+    <div class="ticket-wrapper">
+        <div class="header-gold">Comprobante Oficial</div>
+        
+        <div class="content">
+            <p style="margin-top: 0;">¡Hola, <strong>{{ nombre }}</strong>!</p>
+            <p>Tu participación ha sido confirmada para:</p>
+            
+            <div class="event-title">{{ nombre_sorteo }}</div>
+            
+            <div class="ticket-number-box">
+                <span class="label">BOLETO NÚMERO</span>
+                <span class="number">#{{ numero_boleto }}</span>
+            </div>
+            
+            <p style="font-size: 0.9rem;">Escanea este código para validación:</p>
+            <div class="qr-container">
+                <img src="cid:qrcode_img" alt="QR Validation" width="160">
+            </div>
+        </div>
+        
+        <div class="footer-info">
+            ID de Pago: {{ transaccion_id }}<br>
+            Fecha de emisión: {{ fecha }}<br>
+            Este es un comprobante digital generado automáticamente.
+        </div>
+    </div>
+</body>
+</html>
+
+

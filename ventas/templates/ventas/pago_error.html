@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Error en el Pago</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding-top: 50px; }
+        .error-box { border: 2px solid #ff4d4d; display: inline-block; padding: 20px; border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <div class="error-box">
+        <h1>Lo sentimos, hubo un problema</h1>
+        <p>El pago no se pudo procesar o fue cancelado.</p>
+        <p>No se ha realizado ningún cargo a tu cuenta.</p>
+        <br>
+        <a href="{% url 'ver_carrito' %}" style="background: #0070ba; color: white; padding: 10px; text-decoration: none; border-radius: 5px;">Reintentar Pago</a>
+        <br><br>
+        <a href="/">Volver a la rifa</a>
+    </div>
+</body>
+</html>
